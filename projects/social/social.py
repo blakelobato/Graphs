@@ -1,6 +1,24 @@
+import random
+
 class User:
     def __init__(self, name):
         self.name = name
+
+class Queue():
+    def __init__(self):
+        self.queue = []
+
+    def enqueue(self,value):
+        self.queue.append(value)
+
+    def dequeue(self):
+        if self.size() > 0:
+            return self.queue.pop(0)
+        else:
+            return None
+
+    def size(self):
+        return len(self.queue)
 
 class SocialGraph:
     def __init__(self):
@@ -14,11 +32,14 @@ class SocialGraph:
         """
         if user_id == friend_id:
             print("WARNING: You cannot be friends with yourself")
+            return False
         elif friend_id in self.friendships[user_id] or user_id in self.friendships[friend_id]:
             print("WARNING: Friendship already exists")
+            return False
         else:
             self.friendships[user_id].add(friend_id)
             self.friendships[friend_id].add(user_id)
+            return True
 
     def add_user(self, name):
         """
@@ -43,10 +64,23 @@ class SocialGraph:
         self.users = {}
         self.friendships = {}
         # !!!! IMPLEMENT ME
+        if num_users <= avg_friendships:
+            print('Must have # of users >= average # friends')
+            return
 
         # Add users
-
+        for i in range(num_users):
+            self.add_user(i)
         # Create friendships
+        pop_friendships = []
+        for user_id in self.users:
+            for friend_id in range(user_id +1, self.last_id + 1):
+                pop_friendships.append((user_id, friend_id))
+        random.shuffle(pop_friendships)
+
+        for i in range(num_users * avg_friendships // 2):
+            friendship = pop_friendships[i]
+            self.add_friendship(friendship[0], friendship[1])
 
     def get_all_social_paths(self, user_id):
         """
@@ -59,6 +93,15 @@ class SocialGraph:
         """
         visited = {}  # Note that this is a dictionary, not a set
         # !!!! IMPLEMENT ME
+        queue = [user_id]
+        visited[user_id] = [user_id]
+        while len(queue) > 0:
+            node = queue.pop()
+            friends = self.friendships[node]
+            for friend in friends:
+                if not friend in visited:
+                    visited[friend] = visited[node] + [friend]
+                    queue.append(friend)
         return visited
 
 
